@@ -1,0 +1,95 @@
+---
+title: "Tarea de datos Hidrologicos"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Inicializacion
+
+Se inicia el archvio FDC.csv para cargar los datos contenidos.
+
+```{r}
+inp <- read.csv("FDC.csv",na.strings = "")
+```
+
+## Grafico 1
+
+Grafico que describe el volumen del agua en los diferentes rios.
+
+```{r}
+plot(inp[,2],type= "l",
+     col = "blue",
+     main = "Volumen de agua",
+     xlab = ("Rio Estrella"),
+     ylab = ("Rio Banano")
+)
+lines(inp[ ,3], col = "green")
+```
+
+## Histogramas
+
+Histogramas de los rios Estrella y Banano
+
+```{r}
+hist(inp[,2],
+     main = "Histograma Río estrella",
+     xlab = ("Frecuencia"),
+     ylab = ("Aguas crecidas"),
+     col = "Red"
+)
+
+hist(inp[,3], 
+     main = "Histograma Río Banano",
+     xlab = ("Frecuencia"),
+     ylab = ("Aguas crecidas"),
+     col = "Red"
+) 
+```
+
+## Grafico 2
+
+Datos de los rios por año y mes.
+
+```{r}
+names(inp) <- c("fecha", "Estrella","Banano")
+attach(inp)
+
+Tempdate <- strptime(inp[,1], format= "%d/%m/%Y")
+
+MAQ_Estrella <- tapply(inp[,2], format(Tempdate, format = "%Y"), FUN = sum)   
+MAQ_Banano <- tapply(inp[,3], format(Tempdate, format = "%Y"), FUN = sum)   
+
+write.csv(rbind(MAQ_Estrella, MAQ_Banano),file= "MAQ.csv")
+
+plot(MAQ_Banano,ylim = c(100,3000),
+     col = "Yellow",
+     main = "Valores anuales",
+     xlab = "Valores Mensuales"
+)
+lines(MAQ_Estrella)
+
+MMQ_Estrella <- tapply(Estrella, format(Tempdate, format = "%m"), FUN = sum)   
+MMQ_Banano <- tapply(Banano, format(Tempdate, format = "%m"), FUN = sum)   
+```
+
+# Correlacion
+
+Analisis de correlacion de datos
+
+```{r}
+corinp <- cor(inp[,2:3], method= "spearman")
+
+plot(inp[,2], inp[,3],
+     main = "Correlacion de caudales",
+     xlab = ("Estrella"),
+     ylab = ("Banano"),
+     col = "Red"
+)
+
+inp.lm <- lm(inp[,2] ~ inp[,3], data=inp)
+
+summary(inp.lm)
+
+plot(inp.lm)
